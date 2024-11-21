@@ -29,12 +29,14 @@ export const HeroSection = () => {
           <div className='flex items-center'>
             
             <h1 className='animate-scale-down-md bg-gradient-to-br from-sky-300 to-white bg-clip-text text-5xl font-bold tracking-tight text-transparent'>
-              commune ai 
+              commune 
             </h1>
 
           </div>
           <p className='mt-6 animate-scale-down-md text-center text-xl font-extralight leading-relaxed tracking-tight text-gray-100 lg:text-center'>
-            Renovating the way we build software for <span className='inline-block bg-gradient-to-r from-yellow-200 via-red-400 to-indigo-400 bg-clip-text text-1xl text-transparent'>everyone</span>.
+          <span className='inline-block bg-gradient-to-r from-yellow-200 via-red-400 to-indigo-400 bg-clip-text text-1xl text-transparent'>
+          CONNECT EVERYTHING 
+            </span>.
           </p>
           <div className='z-10 mt-10 flex animate-scale-down-md items-center gap-x-6'>
             <Link
