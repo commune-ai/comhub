@@ -1,4 +1,4 @@
-import { links } from '@/app/utils'
+import config from '@/app/config.json'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -48,7 +48,7 @@ export const DevDiscordWidget = async () => {
 
         <Link
           className='relative hover:animate-scale-up-sm'
-          href={links.devDiscord}
+          href={config.links.devDiscord}
           target='_blank'
           rel='noopener noreferrer'
         >

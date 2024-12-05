@@ -1,15 +1,11 @@
 'use client'
 import Image from 'next/image'
-import { useState } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { links } from '@/app/utils'
-// import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
+import config from '@/app/config.json'
 import { usePathname } from 'next/navigation'
 
 // polkadot 
 import {
-  FaSpinner,
   FaWallet
 } from "react-icons/fa"
 import { FaSackDollar } from "react-icons/fa6";
@@ -37,147 +33,72 @@ const HeaderLink = ({
 )
 
 const navigation = [
-  { name: 'Docs', href: links.docs, external: false },
-  { name: 'Home', href: links.home, external: false },
-  { name: 'Modules', href: links.modules, external: false },
-
+  { name: 'modules', href: config.links.modules },
 ]
 
 export const Header = () => {
   const { isInitialized, handleConnect, selectedAccount, balance } = usePolkadot()
-
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
-
-  const commonButtonClass = 'flex min-w-14 items-center justify-center rounded-2xl text-white p-1.5 hover:bg-gray-100/[0.15]'
   const currentPath = usePathname();
 
   return (
-    <>
-      {/* MOBILE MENU - MODAL */}
-      <div className={`h-full w-full backdrop-blur-sm absolute z-50 ${mobileMenuOpen ? 'visible' : 'hidden'} lg:hidden animate-menu-fade`} onClick={toggleMobileMenu} >
-        <nav className={`h-full w-full fixed z-50`}>
-          <div className='bg-gray-800 h-auto min-w-1/4 w-[70%] sm:w-[40%] sticky top-3 right-3 ml-auto z-[50] p-5 rounded-lg'>
-            <button type='button' className={`${commonButtonClass} h-8 w-8 rounded-lg absolute right-0 top-0 m-5`} onClick={toggleMobileMenu}>
-              <span className='sr-only'>Close menu</span>
-              <XMarkIcon className='h-6 w-6' aria-hidden='true' />
-            </button>
-            <div className='flow-root'>
-              <div className='-my-6 divide-y space-y-4 divide-gray-400/20'>
-                <div className='ml-2 mt-6 space-y-2'>
-                  {navigation.map(({ name, href, external }) => (
-                    <Link key={name} href={href} target={external ? '_blank' : '_self'} className='-mx-3 block rounded-lg px-3 py-1 text-base font-semibold leading-7 text-gray-100 w-[90%] hover:bg-gray-400/10 hover:backdrop-blur-sm'>
-                      {name}
-                    </Link>
-                  ))}
-                </div>
-                <div className='py-6 flex space-x-3'>
-                  <HeaderLink href={links.github} icon='/github-icon-white.svg' alt="Commune's Github Link" className={`${commonButtonClass}`} />
-                  <HeaderLink href={links.discord} icon='/discord-icon-white.svg' alt="Commune's Discord Link" className={commonButtonClass} />
-                  <HeaderLink href={links.x} icon='/x-icon-white.svg' alt="Commune X/Twitter" className={commonButtonClass} />
-                  <HeaderLink href={links.telegram} icon='/telegram-icon-white.svg' alt="Commune X/Twitter" className={commonButtonClass} />
+    <header className="z-40 sticky top-0 flex flex-none w-full border-b border-gray-50/[0.06] backdrop-blur">
+      <nav className="p-4 px-6 mx-auto grid w-full grid-flow-col items-center justify-between">
+        <div className="flex items-center">
+          <Image src="/comhub.png" width={50} height={50} alt="commune logo" priority className="mr-[3px]" />
 
-                </div>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </div>
+        </div>
 
-      {/* NAVBAR */}
-      <header className={`z-40 sticky top-0 flex flex-none w-full border-b border-gray-50/[0.06] backdrop-blur transition-colors duration-500`}>
-        <nav className={`p-4 px-6 mx-auto grid w-full grid-flow-col grid-cols-3 items-center justify-between`} aria-label='Global'>
-          <div className="flex items-center col-span-1">
-            <Link href={links.home} className={`flex items-center ${commonButtonClass}`}>
-              <Image src={'/comhub.png'} width={45} height={45} alt='commune logo' priority className='mr-[3px]' />
-              <span className="font-mono">ComHub</span>
-              {/* <h1 className='animate-scale-down-md bg-gradient-to-br from-white to-pink-500 bg-clip-text text-sm font-mono tracking-tight text-transparent'>
-              ComHub
-            </h1> */}
+        <div className="flex justify-center gap-x-6">
+          {navigation.map(({ name, href }) => (
+            <Link 
+              key={name} 
+              href={href}
+              className={`px-4 py-2 rounded-lg text-sm leading-6 text-gray-100 hover:bg-gray-800 transition-colors ${
+                currentPath === href ? "bg-gray-800 font-medium" : ""
+              }`}
+            >
+              {name}
             </Link>
-            <div className="h-10 border-l border-gray-300 mx-4"></div>
+          ))}
+        </div>
 
-            <div className='hidden justify-start lg:flex'>
-              <HeaderLink href={links.github} icon='/github-icon-white.svg' alt="Commune's Github Link" className={commonButtonClass} />
-              <HeaderLink href={links.discord} icon='/discord-icon-white.svg' alt="Commune's Discord Link" className={commonButtonClass} />
-              <HeaderLink href={links.x} icon='/x-icon-white.svg' alt="Commune X/Twitter" className={commonButtonClass} />
-              <HeaderLink href={links.telegram} icon='/telegram-icon-white.svg' alt="Commune X/Twitter" className={commonButtonClass} />
-            </div>
-          </div>
-          <div className='hidden justify-center lg:flex lg:gap-x-12'>
-            {navigation.map(({ name, href, external }) => (
-              <div key={name} className="flex flex-col items-center">
-
-                <Link key={name} href={href} target={external ? '_blank' : '_self'}
-                  className={`text-sm leading-6 text-gray-100 hover:text-indigo-400 ${currentPath === href ? 'font-bold text-md' : 'font-light'
-                    }`}
-                >
-                  {name}
-                </Link>
-                {/* {currentPath === href && <span className="absolute top-16 w-2 h-2 bg-white rounded-full"></span>} */}
-              </div>
-            ))}
-          </div>
-
-          <div className='col-span-3 lg:hidden '>
-            <button type='button' className={`${commonButtonClass} -m-2.5`} onClick={toggleMobileMenu}>
-              {/* <EllipsisVerticalIcon className='h-6 w-6' aria-hidden='true' /> */}
-              <p className="text-md">menu</p>
-
-            </button>
-          </div>
-          {!isInitialized &&
-            <button className='flex items-center justify-center disabled'>
-
-              <FaSpinner className="flex animate-spin text-white" />
-            </button>
-          }
-
+        <div className="flex items-center">
           {isInitialized && (
             <>
               {selectedAccount ? (
-                // <div className="relative flex items-center rounded-full shadow py-2">
-                <button className={`${commonButtonClass}`} onClick={handleConnect}>
+                <button onClick={handleConnect}>
                   <div className="flex items-center">
                     <FaWallet size={24} className="text-white" />
                     <span className="ml-2 font-mono text-white">
                       {truncateWalletAddress(selectedAccount.address)}
                     </span>
-                  </div>
-                  <div className="h-10 border-l border-gray-300 mx-4"></div>
-                  <div className="flex items-center">
+                    <div className="h-10 border-l border-gray-300 mx-4"></div>
                     <FaSackDollar size={20} className="text-white" />
                     {balance !== undefined && (
                       <span className="ml-2 font-mono text-white">
-                        {balance.toFixed(2).toString()} COMAI
+                        {balance.toFixed(2)} COMAI
                       </span>
                     )}
                   </div>
                 </button>
-
-                // </div>
               ) : (
-                <button onClick={handleConnect} disabled={!isInitialized}
-                  className={`${commonButtonClass}
-                w-full rounded-xl bg-gradient-to-r text-white py-2 px-4 shadow-lg hover:from-indigo-600 hover:to-pink-600 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed
-
-                `}
+                <button 
+                  onClick={handleConnect} 
+                  className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-800 text-white py-2 px-3 text-sm"
                 >
                   <Image
-                    width={35}
-                    height={35}
-                    className="cursor-pointer"
+                    width={30}
+                    height={20}
                     alt="Connect PolkadotJS Wallet"
                     src="/polkadotjs.png"
                   />
-                  <span className="hidden md:block"><p>&nbsp; connect wallet</p></span>
-
+                  <span>connect</span>
                 </button>
               )}
             </>
           )}
-        </nav>
-      </header>
-    </>
+        </div>
+      </nav>
+    </header>
   )
 }

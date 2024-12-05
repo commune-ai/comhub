@@ -27,7 +27,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/docs/Teste.mdx"
   ],
   "exclude": ["node_modules"]
 }

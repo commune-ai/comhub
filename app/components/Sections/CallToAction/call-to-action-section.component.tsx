@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { DiscordWidget, DevDiscordWidget, GradientLayer, ComHubWidget } from '@/app/components'
-import { links, gradientSectionColors } from '@/app/utils'
-
+import { gradientSectionColors } from '@/app/components/Mock'
+import config from '@/app/config.json'
 type CTAWrapper = {
   children: React.ReactElement
   gradientColor: string
@@ -48,29 +48,6 @@ export const CallToActionSection = () => {
         </div>
       </CtaWrapper>
 
-      <CtaWrapper gradientColor={gradientSectionColors.red}>
-        <div>
-          <div className='px-12'>
-            <h2 className='text-3xl font-bold tracking-tight text-white sm:text-4xl'>
-              Commune Docs
-            </h2>
-            <p className='mt-4 text-base leading-7 text-gray-300'>
-              Get started on Commune&apos;s environment – Create, and deploy
-              your modules!
-            </p>
-          </div>
-
-          <div className='mt-6 flex items-center justify-center'>
-            <Link
-              href={links.docs}
-              target='_blank'
-              className='text-md font-base mt-8 flex items-center justify-center p-6 leading-6 text-blue-300 hover:animate-scale-up-sm hover:text-blue-400 '
-            >
-              <span>Go to Docs →</span>
-            </Link>
-          </div>
-        </div>
-      </CtaWrapper>
     </div>
   )
 }

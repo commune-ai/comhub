@@ -1,4 +1,4 @@
-import { links } from '@/app/utils'
+import  config  from '@/app/config.json'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -33,8 +33,8 @@ export const ComHubWidget = () => {
 
         <Link
           className='relative hover:animate-scale-up-sm'
-        //   href={data.instant_invite || links.discord}
-            href={links.comhub}
+        //   href={data.instant_invite || config.links.discord}
+            href={config.links.comhub}
           target='_blank'
           rel='noopener noreferrer'
         >

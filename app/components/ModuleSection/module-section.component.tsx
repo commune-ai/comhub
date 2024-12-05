@@ -8,47 +8,34 @@ import SelectOrInput from "./selectOrInputStake"
 import { useState } from 'react'
 
 type ModuleSectionProps = {
-    title: string
-    subtitle: string,
+    name: string
     url: string,
-    sectionName: string
-    color: string
-    gradientColor?: string
-    gradientStyle?: string
+    github: string,
     image: string,
-    flipped: boolean,
-    validatorKey: string
+    description: string,
+    key: string
 
 }
 
 export const ModuleSection = ({
-    title,
-    subtitle,
+    name,
     url,
-    sectionName,
-    color,
-    gradientColor,
-    gradientStyle,
+    github,
+    description,
     image,
-    flipped,
-    validatorKey
+    key ,
 }: ModuleSectionProps) => {
     const { isConnected, addStake, removeStake } = usePolkadot()
-    const parsedUrl = new URL(url)
 
     const [amount, setAmount] = useState('1');
-
+    let color = 'bg-blue-400/[0.03]'
     return (
         <section
-            id={sectionName}
+            id={name}
             className={`relative m-6 w-11/12 max-w-screen-xl overflow-hidden rounded-3xl bg-gray-800/40 ${color} px-6 py-16 text-center shadow-2xl md:p-12 lg:m-8 lg:p-24 border border-white border-opacity-[0.23]
       `}
         >
             <GridLines />
-            <GradientLayer
-                gradientColor={gradientColor}
-                gradientStyle={gradientStyle}
-            />
             <div className='absolute top-0 left-0 w-full backdrop-blur rounded-t-3xl py-4'>
                 <div className="flex items-center space-x-2 px-5">
                     <button className="h-4 w-4 bg-[#fe5f57] rounded-full hover:bg-[#f43f35] transition-colors"></button>
@@ -67,20 +54,6 @@ export const ModuleSection = ({
                 </Link>
 
             </div>
-            {
-                flipped ? (
-                    <div className="absolute w-full h-full back bg-white">
-
-                        <iframe
-                            className="w-full h-full border-0"
-                            src={url}
-                            allowFullScreen
-                            loading='lazy'
-                        ></iframe>
-                    </div>
-                ) :
-                    null
-            }
 
             <div className='m-12 flex max-w-7xl flex-col items-center justify-center text-left'>
                 <div className='mx-auto max-w-2xl transition-transform transform hover:scale-110'>
@@ -98,44 +71,18 @@ export const ModuleSection = ({
                             className='mx-auto'
                         />
                         <h2 className='text-center text-base font-semibold leading-7 text-indigo-400'>
-                            {parsedUrl.host}
+                            {url}
                         </h2>
                         <p className='mt-2 text-center text-3xl font-bold tracking-tight text-white sm:text-4xl'>
-                            {title}
+                            {name}
                         </p>
                     </Link>
 
                 </div>
-                {/* <div className='flex justify-center space-x-4 m-16'>
-                    <button disabled={false}
-                        // onClick={() => { console.log(validatorKey) }}//addStake({ validator: validatorKey, amount: String(10) }) }}
-                        className='flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 shadow-lg hover:from-indigo-600 hover:to-purple-600 transition-transform transform hover:scale-105'>
-                        Stake
-                    </button>
-                    <button disabled={false}
-                        // onClick={() => { removeStake({ validator: validatorKey, amount: String(10) }) }}
-                        className='flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 px-4 shadow-lg hover:from-red-600 hover:to-pink-600 transition-transform transform hover:scale-105'>
-                        Unstake
-                    </button>
-                </div> */}
 
                 <p className='mt-4 text-center text-md font-extralight tracking-tight text-white'>
-                    {subtitle}
+                    {description}
                 </p>
-                {
-                    flipped ? (
-                        <div className="absolute w-full h-full back bg-white">
-
-                            <iframe
-                                className="w-full h-full border-0"
-                                src={url}
-                                allowFullScreen
-                            ></iframe>
-                        </div>
-                    ) :
-                        null
-                }
-
 
             </div>
             <div className='absolute bottom-0 left-0 w-full bg-gray-900/50 rounded-b-3xl py-4'>
@@ -146,7 +93,7 @@ export const ModuleSection = ({
                     <div className="flex justify-center space-x-4">
                         <button
                             disabled={!isConnected}
-                            onClick={() => { addStake({ validator: validatorKey, amount: amount }) }}
+                            onClick={() => { addStake({ validator: key, amount: amount }) }}
                             className='flex w-1/4 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 shadow-lg hover:from-indigo-600 hover:to-purple-600 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed'
                         >
                             Stake
@@ -162,7 +109,7 @@ export const ModuleSection = ({
                         </div> */}
                         <button
                             disabled={!isConnected}
-                            onClick={() => { removeStake({ validator: validatorKey, amount: amount }) }}
+                            onClick={() => { removeStake({ validator: key, amount: amount }) }}
                             className='flex w-1/4 items-center justify-center rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 px-4 shadow-lg hover:from-red-600 hover:to-pink-600 transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed'
                         >
                             Unstake
@@ -171,7 +118,7 @@ export const ModuleSection = ({
 
                 ) : (
                     <h2 className='text-center text-sm font-mono font-extralight text-gray-700'>
-                        {validatorKey}
+                        {key}
                     </h2>
                 )
                 }

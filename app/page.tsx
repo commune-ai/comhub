@@ -7,7 +7,7 @@ import {
   Footer,
 } from './components'
 import Loading from './loading'
-import { sections } from './utils'
+import { sections } from './components/Mock'
 
 export default function Home() {
   return (

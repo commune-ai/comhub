@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -8,6 +9,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      colors: {
+        'neon-blue': '#42DCDB',
+      },
+      scale: {
+        '102': '1.02',
+      },
       animation: {
         fade: 'fadeOut 0.6s ease-in-out',
         'menu-fade': 'fadeOut 0.1s ease-in-out',

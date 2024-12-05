@@ -35,7 +35,7 @@ export const HeroSection = () => {
           </div>
           <p className='mt-6 animate-scale-down-md text-center text-xl font-extralight leading-relaxed tracking-tight text-gray-100 lg:text-center'>
           <span className='inline-block bg-gradient-to-r from-yellow-200 via-red-400 to-indigo-400 bg-clip-text text-1xl text-transparent'>
-          CONNECT EVERYTHING 
+            CONNECT EVERYTHING
             </span>.
           </p>
           <div className='z-10 mt-10 flex animate-scale-down-md items-center gap-x-6'>
