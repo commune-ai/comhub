@@ -9,6 +9,10 @@ import commune as c
 import requests
 
 class Agent:
+    server_port = 8000
+    app_port = 3000
+    app_name =  __file__.split('/')[-3] + '_app' 
+    model='anthropic/claude-3.5-sonnet'
     free = True
     server_functions = ["get_modules", 'modules', 'add', 'remove', 'update', 'test']
     modules_path = __file__.replace(__file__.split('/')[-1], 'modules')
@@ -18,6 +22,9 @@ class Agent:
         with open(file_path, 'w') as f:
             json.dump(data, f)
         return {"message": f"Data saved to {file_path}"}
+    
+    def logs(self, name=app_name):
+        return c.logs(name)
 
     def load_json(self, file_path):
         try:
@@ -148,28 +155,84 @@ class Agent:
 
 
     avoid_terms = ['__pycache__', '.ipynb_checkpoints', "node_modules", ".git", ".lock", "public", "json"]
-
-    def filegate(self, file):
-        for term in self.avoid_terms:
-            if term in file:
-                return False
-        return True
      
-    def file2text(self, path='./'):
-        file2text = c.filegate(path)
-        return file2text
-    
-    def file2size(self, path='./'):
-        prefix = os.path.abspath(path)
-        return {file.replace(prefix, path): len(text) for file, text in c.file2text(path).items()}
-
-    def context(self):
-        file2text = self.file2text()
-        files = list(file2text.keys())
-        return {
-            "files": files,
-            "file2text": file2text
-        }
-    
     def context_size(self):
         return len(str(self.context()))
+    
+
+    def run(self,  *text, name=True):
+        text= ' '.join( text )
+        c.logs(name)
+
+    # 
+    def serve(self, port=server_port):
+        return c.serve(self.module_name(), port=port)
+    
+    def kill_app(self, name=app_name, port=app_port):
+        while c.port_used(port):
+            c.kill_port(port)
+        return c.kill(name)
+    def app(self, name=app_name, port=app_port, remote=0):
+
+        self.kill_app(name, port)
+        c.cmd(f"pm2 start yarn --name {name} -- dev --port {port}")
+        return c.logs(name, mode='local' if remote else 'cmd')
+    def fix(self, name=app_name, model=model):
+        logs = c.logs(name, mode='local')
+        files =   self.files(f"{logs}")
+        context = {f: c.get_text(f) for f in files}
+        prompt = f"CONTEXT {context} LOGS  {logs} OBJECTIVE fix the issue"
+        print('Sending prompt:',len(prompt))
+        return c.ask(prompt[:10000], model=model)
+
+    
+    def file2text(self, text, n=10, model=model, **kwargs):
+        return {f: c.get_text(f) for f in self.files(text, n=n, model=model, **kwargs)}
+    def query(self,  
+              options : list,  
+              query='most relevant files', 
+              output_format="list[[key:str, score:float]]",  
+              anchor = 'OUTPUT', 
+              threshold=0.5,
+              n=10,  
+              model=model):
+
+        front_anchor = f"<{anchor}>"
+        back_anchor = f"</{anchor}>"
+        output_format = f"DICT(data:{output_format})"
+        print(f"Querying {query} with options {options}")
+        prompt = f"""
+        QUERY
+        {query}
+        OPTIONS 
+        {options} 
+        INSTRUCTION 
+        get the top {n} functions that match the query
+        OUTPUT
+        (JSON ONLY AND ONLY RESPOND WITH THE FOLLOWING INCLUDING THE ANCHORS SO WE CAN PARSE) 
+        {front_anchor}{output_format}{back_anchor}
+        """
+        output = ''
+        for ch in c.ask(prompt, model=model): 
+            print(ch, end='')
+            output += ch
+            if ch == front_anchor:
+                break
+        if '```json' in output:
+            output = output.split('```json')[1].split('```')[0]
+        elif front_anchor in output:
+            output = output.split(front_anchor)[1].split(back_anchor)[0]
+        else:
+            output = output
+        output = json.loads(output)
+        assert len(output) > 0
+        return [k for k,v in output["data"] if v > threshold]
+
+    def files(self, query='the file that is the core of commune',  path='./',  n=10, model='anthropic/claude-3.5-sonnet-20240620:beta'):
+        files =  self.query(options=c.files(path), query=query, n=n, model=model)
+        return [c.abspath(path+k) for k in files]
+    
+
+    def get_key(self, password):
+        return c.str2key(password)
+
