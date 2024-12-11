@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from './components'
 
-import Providers from "@/app/provider"
 import "react-responsive-modal/styles.css"
 import "@/app/globals.css"
 
@@ -52,10 +51,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} h-full relative bg-gray-900`}>
-        <Providers>
           <Header />
           {children}
-        </Providers>
       </body>
     </html>
   )

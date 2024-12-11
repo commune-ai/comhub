@@ -241,10 +241,4 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({
   )
 }
 
-export const usePolkadot = (): PolkadotContextType => {
-  const context = useContext(PolkadotContext)
-  if (context === undefined) {
-    throw new Error("usePolkadot must be used within a PolkadotProvider")
-  }
-  return context
-}
+

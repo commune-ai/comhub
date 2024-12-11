@@ -3,7 +3,6 @@
 import { GridLines, GradientLayer } from '../BackgroundEffects'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePolkadot } from "@/app/wallet/context"
 import SelectOrInput from "./selectOrInputStake"
 import { useState } from 'react'
 

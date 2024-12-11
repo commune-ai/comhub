@@ -7,34 +7,18 @@ from typing import Dict, Optional
 import commune as c 
 # Pydantic model for module dat
 import requests
-
+from .utils import load_json, save_json, logs
 class Agent:
     server_port = 8000
     app_port = 3000
     app_name =  __file__.split('/')[-3] + '_app' 
     model='anthropic/claude-3.5-sonnet'
     free = True
-    server_functions = ["get_modules", 'modules', 'add', 'remove', 'update', 'test']
+    endpoints = ["get_modules", 'modules', 'add_module', 'remove', 'update', 'test']
     modules_path = __file__.replace(__file__.split('/')[-1], 'modules')
-
-    def save_json(self,file_path, data):
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, 'w') as f:
-            json.dump(data, f)
-        return {"message": f"Data saved to {file_path}"}
     
-    def logs(self, name=app_name):
-        return c.logs(name)
-
-    def load_json(self, file_path):
-        try:
-            with open(file_path, 'r') as f:
-                return json.load(f)
-        except:
-            return {}
-        
     # In-memory storage for modules
-
+    
     def get_module_path(self, module_id):
         return f"{self.modules_path}/{module_id}.json"
 
@@ -45,27 +29,26 @@ class Agent:
         path = os.path.abspath(path)
         return c.ls(path)
 
-
+    def logs(name):
+        return c.logs(name)
 
     def check_module(self, module):
         assert isinstance(module, dict), "Module must be a dictionary"
         assert "name" in module, "Module must have a name"
         assert "url" in module, "Module must have a url"
         assert "key" in module, "Module must have a key"
-        assert "key_type" in module, "Module must have a key_type"
+        assert "github" in module, "Module must have a key_type"
         assert "description" in module, "Module must have a description"
 
-    def save_module(self, module, module_id=None):
-        if module_id is None:
-            module_id = module['key']
+    def save_module(self, module):
         self.check_module(module)
-        module_path = self.get_module_path(module_id)
-        self.save_json(module_path, module)
-        return {"message": f"Module {module_id} updated successfully"}
+        module_path = self.get_module_path(module["key"])
+        save_json(module_path, module)
+        return {"message": f"Module {module['key']} updated successfully"}
 
     def get_module(self, module_id):
         module_path = self.get_module_path(module_id)
-        return self.load_json(module_path)
+        return load_json(module_path)
     
     def clear_modules(self):
         for module_path in self.ls(self.modules_path):
@@ -79,24 +62,21 @@ class Agent:
     def modules(self):
         modules = {}
         for module_path in self.ls(self.modules_path):
-            module = self.load_json(module_path)
+            module = load_json(module_path)
             module_id = module['key']
             modules[module_id] = module
         return list(modules.values())
 
-    def add(self,
-            name  = "module", 
-            url  = "http://module.com",
+    def add_module(self, name  = "module", 
+            url  = "http://comhub.com",
             key  = "module_key",
             github = "fam",
-            description = "Module description",  
-            key_type='eth' ):
+            description = "Module description", **kwargs ):
         
         module = {
             "name": name,
             "url": url,
             "key": key,
-            "key_type": key_type,
             "github": github,
             "description": description
         }
@@ -125,7 +105,7 @@ class Agent:
         return os.path.exists(self.get_module_path(module_id))
 
     def get_modules(self):
-        return self.load_json(self.modules_path)
+        return load_json(self.modules_path)
 
     def update(self, module_id: str, module: Dict):
         if not self.module_exists(module_id):
@@ -144,27 +124,17 @@ class Agent:
             "key_type": "string",
             "description": "Test module description"
         }
-
         # Add module
-        self.add(test_module)
+        self.add_module(test_module)
         assert self.module_exists(test_module['name']), "Module not added"
-        self.remove(test_module['name'])
+        self.remove_module(test_module['name'])
         assert not self.module_exists(test_module['name']), "Module not removed"
         return {"message": "All tests passed"}
     
 
 
     avoid_terms = ['__pycache__', '.ipynb_checkpoints', "node_modules", ".git", ".lock", "public", "json"]
-     
-    def context_size(self):
-        return len(str(self.context()))
-    
 
-    def run(self,  *text, name=True):
-        text= ' '.join( text )
-        c.logs(name)
-
-    # 
     def serve(self, port=server_port):
         return c.serve(self.module_name(), port=port)
     
@@ -172,11 +142,13 @@ class Agent:
         while c.port_used(port):
             c.kill_port(port)
         return c.kill(name)
-    def app(self, name=app_name, port=app_port, remote=0):
 
+    
+    def app(self, name=app_name, port=app_port, remote=0):
         self.kill_app(name, port)
         c.cmd(f"pm2 start yarn --name {name} -- dev --port {port}")
         return c.logs(name, mode='local' if remote else 'cmd')
+    
     def fix(self, name=app_name, model=model):
         logs = c.logs(name, mode='local')
         files =   self.files(f"{logs}")
@@ -185,9 +157,6 @@ class Agent:
         print('Sending prompt:',len(prompt))
         return c.ask(prompt[:10000], model=model)
 
-    
-    def file2text(self, text, n=10, model=model, **kwargs):
-        return {f: c.get_text(f) for f in self.files(text, n=n, model=model, **kwargs)}
     def query(self,  
               options : list,  
               query='most relevant files', 
@@ -232,7 +201,29 @@ class Agent:
         files =  self.query(options=c.files(path), query=query, n=n, model=model)
         return [c.abspath(path+k) for k in files]
     
+    networks = ['ethereum',
+                 'bitcoin', 
+                 'solana', 
+                 'bittensor', 
+                 'commune']
+    def is_valid_network(self, network):
+        return network in self.networks
+    
+    def get_key(self, password, **kwargs):
+        return c.str2key(password, **kwargs)
 
-    def get_key(self, password):
-        return c.str2key(password)
+    def feedback(self, path='./',  model=model):
+        code = c.file2text(path)
+   
+        prompt = f"""
 
+        PROVIDE FEEDBACK and s a score out of 100 for the following prompt on quality 
+        and honesty. I want to make sure these are legit and there is a good chance 
+        they are not. You are my gaurdian angel.
+        {code}        
+        OUTPUT_FORMAT MAKE SURE ITS IN THE LINES
+        <OUTPUT><DICT(pointers:str, score:int (out of 100))></OUTPUT>
+        OUTPUT
+        """
+
+        return c.ask(prompt, model=model)
