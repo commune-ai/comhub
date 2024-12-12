@@ -1,6 +1,7 @@
 
 import json
 import commune as c
+import os
 
 def load_json(file_path):
     try:
@@ -11,6 +12,9 @@ def load_json(file_path):
     
 
 def save_json(file_path, data):
+    dir_path = os.path.dirname(file_path)
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path, exist_ok=True)
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
 

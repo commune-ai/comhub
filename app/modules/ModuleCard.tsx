@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type ModuleType = {
   name: string;
@@ -23,20 +24,13 @@ function copyToClipboard(text: string) {
 }
 
 export default function ModuleCard({ module }: ModuleCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const formatUrl = (url: string) => {
-    return url.startsWith('http') ? url : `http://${url}`;
-  };
-
-  const formatGithub = (github: string) => {
-    return github.startsWith('http') ? github : `https://github.com/${github}`;
-  };
-
-  const handleCopy = (text: string, field: string) => {
+  const handleCopy = (e: React.MouseEvent, text: string, field: string) => {
+    e.stopPropagation();
     copyToClipboard(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
@@ -44,7 +38,7 @@ export default function ModuleCard({ module }: ModuleCardProps) {
 
   return (
     <div
-      onClick={() => setIsExpanded(!isExpanded)}
+      onClick={() => router.push(`/modules/${module.name}`)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
         setIsHovered(false);
@@ -56,7 +50,7 @@ export default function ModuleCard({ module }: ModuleCardProps) {
         bg-white/5 backdrop-blur-md
         shadow-lg
         transform transition-all duration-300
-        ${isExpanded ? 'fixed inset-4 z-50 overflow-y-auto' : 'hover:bg-white/10 hover:scale-105'}
+        hover:bg-white/10 hover:scale-105
         flex flex-col
         relative
       `}
@@ -70,12 +64,6 @@ export default function ModuleCard({ module }: ModuleCardProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 mb-4">
-        <p className="text-white/70 text-base">
-          {module.description}
-        </p>
-      </div>
-
       <div className="mt-auto space-y-2">
         {/* URL Row */}
         <div className="flex items-center gap-2">
@@ -83,10 +71,7 @@ export default function ModuleCard({ module }: ModuleCardProps) {
           <div className="flex-1 bg-black/60 rounded-lg p-2 flex justify-between items-center">
             <span className="text-white truncate">{module.url}</span>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopy(module.url, 'url');
-              }}
+              onClick={(e) => handleCopy(e, module.url, 'url')}
               className="ml-2 text-white/70 hover:text-white"
             >
               {copiedField === 'url' ? '✓' : '📋'}
@@ -100,10 +85,7 @@ export default function ModuleCard({ module }: ModuleCardProps) {
           <div className="flex-1 bg-black/60 rounded-lg p-2 flex justify-between items-center">
             <span className="text-white truncate">{module.github}</span>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopy(module.github, 'github');
-              }}
+              onClick={(e) => handleCopy(e, module.github, 'github')}
               className="ml-2 text-white/70 hover:text-white"
             >
               {copiedField === 'github' ? '✓' : '📋'}
@@ -117,10 +99,7 @@ export default function ModuleCard({ module }: ModuleCardProps) {
           <div className="flex-1 bg-black/60 rounded-lg p-2 flex justify-between items-center">
             <span className="text-white truncate">{module.key}</span>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCopy(module.key, 'key');
-              }}
+              onClick={(e) => handleCopy(e, module.key, 'key')}
               className="ml-2 text-white/70 hover:text-white"
             >
               {copiedField === 'key' ? '✓' : '📋'}
@@ -128,21 +107,6 @@ export default function ModuleCard({ module }: ModuleCardProps) {
           </div>
         </div>
       </div>
-
-      {isExpanded && (
-        <div className="mt-6 space-y-4">
-          <div className="p-6 bg-white/10 rounded-xl backdrop-blur-md border border-white/20">
-            <div className="mt-2">
-              <iframe
-                src={formatUrl(module.url)}
-                className="w-full h-[70vh] rounded-xl border border-white/20"
-                title={module.name}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

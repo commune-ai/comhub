@@ -1,4 +1,3 @@
-
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -7,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { generateDeterministicKey } from '@/app/wallet/utils/keyGenerator'
 import { CopyButton } from '../CopyButton'
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 
 const navigation = [
   { name: 'modules', href: config.links.modules },
@@ -27,10 +27,16 @@ export const Header = () => {
     setPassword('')
   }
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Implement search functionality here
+    console.log('Searching for:', searchTerm)
+  }
+
   return (
     <header className="z-40 sticky top-0 flex flex-none w-full border-b border-gray-50/[0.06] backdrop-blur">
       <nav className="p-4 px-6 mx-auto w-full flex items-center justify-between">
-        <div className="flex items-center">
+        <div className="flex items-center gap-x-4">
           <Link href="/">
             <Image 
               src="/comhub.png" 
@@ -41,10 +47,11 @@ export const Header = () => {
               className="mr-[3px]" 
             />
           </Link>
+          
         </div>
 
         <div className="flex items-center gap-x-6">
-          {navigation.map(({ name, href }) => (
+          {/* {navigation.map(({ name, href }) => (
             <Link 
               key={name} 
               href={href}
@@ -55,7 +62,7 @@ export const Header = () => {
               {name}
             </Link>
           ))}
-          
+           */}
           {walletInfo ? (
             <div className="flex items-center gap-x-4">
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700">

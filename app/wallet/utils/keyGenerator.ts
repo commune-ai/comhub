@@ -2,7 +2,7 @@ import {
   blake2AsHex, 
   mnemonicGenerate, 
   mnemonicToMiniSecret, 
-  ed25519PairFromSeed 
+  ed25519PairFromSeed , 
 } from '@polkadot/util-crypto';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { secp256k1 } from '@noble/curves/secp256k1';
@@ -31,9 +31,9 @@ export function generateDeterministicKey(
     const keyPair = ed25519PairFromSeed(seedBytes);
     
     return {
-      address: u8aToHex(keyPair.publicKey),
+      address: u8aToHex(keyPair.secretKey),
       type: 'sr25519',
-      publicKey: u8aToHex(keyPair.publicKey),
+      publicKey: keyPair.publicKey,
       privateKey: u8aToHex(keyPair.secretKey)
     };
   } else {

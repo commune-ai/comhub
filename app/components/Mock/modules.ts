@@ -16,7 +16,7 @@ export const modules = [
       title: 'CommuneAi',
       subtitle: 'CommuneAI homepage',
       color: 'bg-blue-400/[0.03]',
-      gradientColor: gradientModuleColors.violet,
+      gradientColor: gradiexntModuleColors.violet,
       image: '/communeai-org.png',
       url: 'https://communeai.org/',
       validatorKey: "5EJ9AUpSGafWeagdP5nwc5AwcYBkagYSZyx2BmLKWJrGBZUZ",

@@ -57,11 +57,11 @@ export default function Modules() {
       if (!name || !key) {
         throw new Error('Name and Key are required');
       }
-      const params = { name:name, key:key, github:github, url:url, network:network };
+      const params = { name: name, key: key, github: github, url: url, network: network };
       await client.call('add_module', params);
-      setNewModule(defaultModule); // Reset the form
+      setNewModule(defaultModule);
       setShowCreateForm(false);
-      await fetchModules(); // Refresh modules list
+      await fetchModules();
     } catch (err: any) {
       setError(err.message || 'Failed to create module');
     } finally {
@@ -91,9 +91,10 @@ export default function Modules() {
         </div>
       )}
 
-      <div className="flex gap-4 items-center">
+      {/* Increased max-width and added more padding */}
+      <div className="flex gap-4 items-center w-full max-w-3xl px-6 mb-12">
         <div className="flex-1 relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
             🔍
           </span>
           <input
@@ -101,72 +102,99 @@ export default function Modules() {
             placeholder="Search modules..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800/80 backdrop-blur-md text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-lg"
+            className="w-full pl-12 pr-4 py-4 text-lg rounded-lg bg-gray-800/80 backdrop-blur-md text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-lg"
             disabled={loading}
           />
         </div>
         <button
           onClick={fetchModules}
           disabled={loading}
-          className="px-6 py-2 bg-indigo-500/90 backdrop-blur-md text-white rounded-lg hover:bg-indigo-600 disabled:opacity-50 shadow-lg transition-all duration-300"
+          className="px-6 py-4 bg-indigo-500/90 backdrop-blur-md text-white rounded-lg hover:bg-indigo-600 disabled:opacity-50 shadow-lg transition-all duration-300 text-lg"
         >
           {loading ? 'Loading...' : '♻️'}
         </button>
         <button
           onClick={() => setShowCreateForm(true)}
           disabled={loading}
-          className="px-6 py-2 bg-green-500/90 backdrop-blur-md text-white rounded-lg hover:bg-green-600 disabled:opacity-50 shadow-lg transition-all duration-300"
+          className="px-6 py-4 bg-green-500/90 backdrop-blur-md text-white rounded-lg hover:bg-green-600 disabled:opacity-50 shadow-lg transition-all duration-300 text-lg"
         >
           +
         </button>
       </div>
 
+
       {showCreateForm && (
-        <div className="w-full max-w-lg mb-8 p-6 bg-gray-800 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold mb-6 text-white">Create New Module</h2>
+  <div className="w-full max-w-lg mb-8 p-6 bg-gray-800/90 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
+    <h2 className="text-2xl font-bold mb-6 text-white">Create New Module</h2>
 
-          {['name', 'key', 'github', 'url', 'description'].map((field) => (
-            <input
-              key={field}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={(newModule as any)[field]}
-              onChange={(e) => handleFormChange(field, e.target.value)}
-              className="w-full px-4 py-3 mb-4 rounded-lg bg-gray-700 text-white border border-gray-600"
-              disabled={loading}
-            />
-          ))}
+    {/* Essential fields with icons */}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">📦</span>
+        <input
+          placeholder="Module Name"
+          value={newModule.name}
+          onChange={(e) => handleFormChange('name', e.target.value)}
+          className="flex-1 px-4 py-3 rounded-lg bg-gray-700/90 text-white border border-gray-600 focus:border-indigo-500 focus:outline-none"
+          disabled={loading}
+        />
+      </div>
 
-          <input
-            key="network"
-            type="text"
-            placeholder="Crypto Type"
-            value={newModule.network}
-            onChange={(e) => handleFormChange('network', e.target.value)}
-            className="w-full px-4 py-3 mb-4 rounded-lg bg-gray-700 text-white border border-gray-600"
-            disabled={loading}
-          />
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">🔑</span>
+        <input
+          placeholder="Module Key"
+          value={newModule.key}
+          onChange={(e) => handleFormChange('key', e.target.value)}
+          className="flex-1 px-4 py-3 rounded-lg bg-gray-700/90 text-white border border-gray-600 focus:border-indigo-500 focus:outline-none"
+          disabled={loading}
+        />
+      </div>
 
-          <div className="flex justify-end gap-4">
-            <button
-              onClick={() => {
-                setShowCreateForm(false);
-                setNewModule(defaultModule);
-              }}
-              disabled={loading}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleCreate}
-              disabled={loading}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
-            >
-              {loading ? 'Creating...' : 'Create'}
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">💻</span>
+        <input
+          placeholder="GitHub URL"
+          value={newModule.github}
+          onChange={(e) => handleFormChange('github', e.target.value)}
+          className="flex-1 px-4 py-3 rounded-lg bg-gray-700/90 text-white border border-gray-600 focus:border-indigo-500 focus:outline-none"
+          disabled={loading}
+        />
+      </div>
+
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">🌐</span>
+        <input
+          placeholder="Website URL"
+          value={newModule.url}
+          onChange={(e) => handleFormChange('url', e.target.value)}
+          className="flex-1 px-4 py-3 rounded-lg bg-gray-700/90 text-white border border-gray-600 focus:border-indigo-500 focus:outline-none"
+          disabled={loading}
+        />
+      </div>
+    </div>
+
+    <div className="flex justify-end gap-4 mt-6">
+      <button
+        onClick={() => {
+          setShowCreateForm(false);
+          setNewModule(defaultModule);
+        }}
+        disabled={loading}
+        className="px-4 py-2 bg-gray-500/90 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-colors duration-200"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleCreate}
+        disabled={loading}
+        className="px-4 py-2 bg-green-500/90 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors duration-200"
+      >
+        {loading ? 'Creating...' : 'Create'}
+      </button>
+    </div>
+  </div>
+)}
 
       <div className="w-full max-w-[1600px] px-4 max-h-[70vh] overflow-y-auto">
         {loading && <div className="text-center py-4 text-white">Loading...</div>}
