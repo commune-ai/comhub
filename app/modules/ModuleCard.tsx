@@ -8,9 +8,10 @@ type ModuleType = {
   name: string;
   key: string;
   github: string;
-  url: string;
+  address: string;
   description: string;
   key_type: string;
+  hash: string;
 };
 
 type ModuleCardProps = {
@@ -23,13 +24,47 @@ function copyToClipboard(text: string) {
   });
 }
 
+function abbreviateString(str: string, maxLength = 8): string {
+  if (str.length <= maxLength) return str;
+  return `${str.substring(0, maxLength)}…`;
+}
+
+function AbbreviateOnHover({
+  text,
+  maxLength = 8,
+}: {
+  text: string;
+  maxLength?: number;
+}) {
+  const abbreviated = abbreviateString(text, maxLength);
+
+  return (
+    <span className="relative group">
+      <span className="group-hover:opacity-0 transition-opacity">
+        {abbreviated}
+      </span>
+      <span
+        className={`
+          absolute inset-0 
+          opacity-0 group-hover:opacity-100 
+          transition-opacity
+        `}
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
+
 export default function ModuleCard({ module }: ModuleCardProps) {
   const router = useRouter();
-  const [isHovered, setIsHovered] = useState(false);
-  const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const handleCopy = (e: React.MouseEvent, text: string, field: string) => {
+  const handleCopy = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    text: string,
+    field: string
+  ) => {
     e.stopPropagation();
     copyToClipboard(text);
     setCopiedField(field);
@@ -38,72 +73,70 @@ export default function ModuleCard({ module }: ModuleCardProps) {
 
   return (
     <div
-      onClick={() => router.push(`/modules/${module.name}`)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setHoveredIcon(null);
-      }}
+      onClick={() => router.push(`/modules/${module.key}`)}
       className={`
-        p-6 rounded-2xl cursor-pointer
-        border border-white/20
-        bg-white/5 backdrop-blur-md
-        shadow-lg
-        transform transition-all duration-300
-        hover:bg-white/10 hover:scale-105
-        flex flex-col
-        relative
+        relative p-6 rounded-2xl cursor-pointer
+        border border-white/10
+        bg-gradient-to-br from-gray-800/90 to-gray-900/90
+        backdrop-blur-md
+        shadow-xl
+        transform transition-all duration-300 ease-in-out
+        hover:scale-[1.02] hover:shadow-2xl
+        hover:border-white/20
+        group
       `}
-      style={{
-        background: 'linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
-      }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-xl text-white font-semibold truncate">
-          {module.name}
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+
+      {/* Header */}
+      <div className="relative flex items-center justify-between mb-6">
+        <div className="text-xl text-white font-bold truncate bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+          {/* Use AbbreviateOnHover for the name */}
+          <AbbreviateOnHover text={module.name} maxLength={12} />
         </div>
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 opacity-75 group-hover:opacity-100 transition-opacity" />
       </div>
 
-      <div className="mt-auto space-y-2">
+      {/* Content */}
+      <div className="relative mt-auto space-y-3">
         {/* URL Row */}
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🌐</span>
-          <div className="flex-1 bg-black/60 rounded-lg p-2 flex justify-between items-center">
-            <span className="text-white truncate">{module.url}</span>
-            <button
-              onClick={(e) => handleCopy(e, module.url, 'url')}
-              className="ml-2 text-white/70 hover:text-white"
-            >
-              {copiedField === 'url' ? '✓' : '📋'}
-            </button>
-          </div>
-        </div>
-
-        {/* GitHub Row */}
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">📦</span>
-          <div className="flex-1 bg-black/60 rounded-lg p-2 flex justify-between items-center">
-            <span className="text-white truncate">{module.github}</span>
-            <button
-              onClick={(e) => handleCopy(e, module.github, 'github')}
-              className="ml-2 text-white/70 hover:text-white"
-            >
-              {copiedField === 'github' ? '✓' : '📋'}
-            </button>
+        <div className="flex items-center gap-3 group/item">
+          <span className="text-2xl transform transition-transform group-hover/item:scale-110">
+            🌐
+          </span>
+          <div className="flex-1 bg-black/40 rounded-xl p-3 backdrop-blur-sm border border-white/5 group-hover:border-white/10 transition-all">
+            <div className="flex justify-between items-center">
+              <span className="text-white/90 truncate text-sm">
+                <AbbreviateOnHover text={module.hash} maxLength={28} />
+              </span>
+              <button
+                onClick={(e) => handleCopy(e, module.hash, 'hash')}
+                className="ml-2 text-white/50 hover:text-white/90 transition-colors"
+              >
+                {copiedField === 'hash' ? '✓' : '📋'}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Key Row */}
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🔑</span>
-          <div className="flex-1 bg-black/60 rounded-lg p-2 flex justify-between items-center">
-            <span className="text-white truncate">{module.key}</span>
-            <button
-              onClick={(e) => handleCopy(e, module.key, 'key')}
-              className="ml-2 text-white/70 hover:text-white"
-            >
-              {copiedField === 'key' ? '✓' : '📋'}
-            </button>
+        <div className="flex items-center gap-3 group/item">
+          <span className="text-2xl transform transition-transform group-hover/item:scale-110">
+            🔑
+          </span>
+          <div className="flex-1 bg-black/40 rounded-xl p-3 backdrop-blur-sm border border-white/5 group-hover:border-white/10 transition-all">
+            <div className="flex justify-between items-center">
+              <span className="text-white/90 truncate text-sm">
+                <AbbreviateOnHover text={module.key} maxLength={28} />
+              </span>
+              <button
+                onClick={(e) => handleCopy(e, module.key, 'key')}
+                className="ml-2 text-white/50 hover:text-white/90 transition-colors"
+              >
+                {copiedField === 'key' ? '✓' : '📋'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

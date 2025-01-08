@@ -7,15 +7,21 @@ from typing import Dict, Optional
 import commune as c 
 # Pydantic model for module dat
 import requests
+import requests
+
 from .utils import load_json, save_json, logs
-class Agent:
+class Backend:
+    
     server_port = 8000
     app_port = 3000
     app_name =  __file__.split('/')[-3] + '_app' 
     model='anthropic/claude-3.5-sonnet'
     free = True
-    endpoints = ["get_modules", 'modules', 'add_module', 'remove', 'update', 'test']
+    endpoints = ["get_modules", 'modules', 'add_module', 'remove', 'update', 'test', 'info']
     modules_path = __file__.replace(__file__.split('/')[-1], 'modules')
+
+    def __init__(self, network='subspace'):
+        self.network_module = c.module(network)()
     
     # In-memory storage for modules
     
@@ -33,12 +39,25 @@ class Agent:
         return c.logs(name)
 
     def check_module(self, module):
-        assert isinstance(module, dict), "Module must be a dictionary"
-        assert "name" in module, "Module must have a name"
-        assert "url" in module, "Module must have a url"
-        assert "key" in module, "Module must have a key"
-        assert "github" in module, "Module must have a key_type"
-        assert "description" in module, "Module must have a description"
+        features = ['name', 'address', 'key', 'code']  
+        if isinstance(module, str):
+            module = self.get_module(module)
+        if not isinstance(module, dict):
+            return False
+        assert all([k not in module for k in features])
+        return True
+
+    def check_modules(self):
+        checks = []
+        for m in self.modules():
+            try:
+                self.check_module(m)
+                m['check'] = True
+            except Exception as e:
+                print(e)
+                m['check'] = False
+            checks += [m]
+        return checks
 
     def save_module(self, module):
         self.check_module(module)
@@ -58,30 +77,50 @@ class Agent:
     
     def get_modules(self):
         return self.modules()
+    
+    def resolve_path(self, path):
+        return '~/.hub/api/' + path
 
-    def modules(self):
-        modules = {}
-        for module_path in self.ls(self.modules_path):
-            module = load_json(module_path)
-            module_id = module['key']
-            modules[module_id] = module
-        return list(modules.values())
+    def modules(self, tempo=600, update=False, lite=True, page=1, page_size=100):
+        modules =  c.get_modules() 
+        path = self.resolve_path('modules')
+        module_infos = c.get(path,[], max_age=tempo, update=update)
+
+        if len(module_infos) > 0:
+            return module_infos
+        else:
+            
+            modules = c.get_modules()
+            for m in modules:
+                try:
+                    code = c.code(m)
+                    hash_code = c.hash(code)
+                    key = c.pwd2key(hash_code)
+                    m = {'name': m, 
+                        'code': code,
+                        'key': key.ss58_address, 
+                        'crypto_type': key.crypto_type ,
+                        'hash': hash_code, 
+                        'time': c.time(),
+                        }
+                    if lite:
+                        m.pop('code')
+
+                    module_infos += [m]
+                except Exception as e:
+                    print(e)
+
+        c.put(path, module_infos)
+
+        return module_infos
 
     def add_module(self, name  = "module", 
-            url  = "http://comhub.com",
-            key  = "module_key",
-            github = "fam",
-            description = "Module description", **kwargs ):
+                   key  = "module_key", 
+                   code = None, 
+                   address  = "0.0.0.0:8000", 
+                   **kwargs ):
         
-        module = {
-            "name": name,
-            "url": url,
-            "key": key,
-            "github": github,
-            "description": description
-        }
-        print('Adding module:', module)
-        assert not self.module_exists(module['name']), "Module already exists"
+        module = { "name": name, "address": address, "key": key, "code": code, }
         self.save_module(module)
         result =  {"message": f"Module {module['name']} added successfully", "module": module}
         print('RESULT',result)
@@ -144,7 +183,8 @@ class Agent:
         return c.kill(name)
 
     
-    def app(self, name=app_name, port=app_port, remote=0):
+    def app(self, name=app_name, port=app_port, server_port=server_port, remote=0):
+        self.serve(server_port)
         self.kill_app(name, port)
         c.cmd(f"pm2 start yarn --name {name} -- dev --port {port}")
         return c.logs(name, mode='local' if remote else 'cmd')
@@ -227,3 +267,31 @@ class Agent:
         """
 
         return c.ask(prompt, model=model)
+
+
+    def file2text(owner: str, repo: str, filepath: str, branch: str = 'main') -> str:
+        """
+        Get the text contents of a file in a GitHub repository without using the GitHub API.
+        This uses the raw.githubusercontent.com domain to fetch the file content directly.
+        
+        Parameters:
+            owner (str): Repository owner/organization
+            repo (str): Repository name
+            filepath (str): Path to the file within the repository
+            branch (str): The branch to read from (default: 'main')
+            
+        Returns:
+            str: The text content of the file.
+        """
+        raw_url = f'https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{filepath}'
+        response = requests.get(raw_url)
+        response.raise_for_status()
+        return response.text
+
+    # Example Usage:
+    # files = list_github_repo_files('commune-ai', 'commune')
+    # for f in files:
+    #     print(f['name'], f['path'], f['type'])
+    #     if f['type'] == 'file':
+    #         content = file2text('commune-ai', 'commune', f['path'])
+    #         print(content)

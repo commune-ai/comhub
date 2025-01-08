@@ -13,7 +13,7 @@ type ModuleType = {
   network: string;
 };
 
-export default function ModulePage({ params }: { params: { name: string } }) {
+export default function ModulePage({ params }: { params: { key: string } }) {
   const router = useRouter();
   const [module, setModule] = useState<ModuleType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ export default function ModulePage({ params }: { params: { name: string } }) {
     const fetchModule = async () => {
       try {
         const modules = await client.call('modules');
-        const foundModule = modules.find((m: ModuleType) => m.name === params.name);
+        const foundModule = modules.find((m: ModuleType) => m.key === params.key);
         if (foundModule) {
           setModule(foundModule);
         }
@@ -35,7 +35,7 @@ export default function ModulePage({ params }: { params: { name: string } }) {
     };
 
     fetchModule();
-  }, [params.name]);
+  }, [params.key]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -63,7 +63,7 @@ export default function ModulePage({ params }: { params: { name: string } }) {
             <div className="bg-black/40 rounded-xl p-4">
               <h3 className="text-white font-semibold mb-2">URL</h3>
               <div className="bg-black/60 rounded-lg p-3">
-                <span className="text-white">{module.url}</span>
+                <span className="text-white">{module.hash}</span>
               </div>
             </div>
 
@@ -87,7 +87,7 @@ export default function ModulePage({ params }: { params: { name: string } }) {
           <div className="mt-8">
             <h2 className="text-2xl font-semibold text-white mb-4">Preview</h2>
             <iframe
-              src={module.url.startsWith('http') ? module.url : `http://${module.url}`}
+              src={`http://${module.address}/docs`}
               className="w-full h-[600px] rounded-xl border border-white/20"
               title={module.name}
             />

@@ -93,7 +93,7 @@ const WalletModal = ({
         </button>
       </div>
     </Modal>
-  )
+  )x
 }
 
 export default WalletModal

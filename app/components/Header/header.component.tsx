@@ -1,12 +1,12 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import config from '@/app/config.json'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { generateDeterministicKey } from '@/app/wallet/utils/keyGenerator'
-import { CopyButton } from '../CopyButton'
-import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+import config from '@/app/config.json'
+import { Wallet } from '@/app/wallet'
+import { CopyButton } from '@/app/components/CopyButton'
+import { cryptoWaitReady } from '@polkadot/util-crypto'
 
 const navigation = [
   { name: 'modules', href: config.links.modules },
@@ -17,21 +17,22 @@ export const Header = () => {
   const [password, setPassword] = useState('')
   const [walletInfo, setWalletInfo] = useState<{address: string, type: string} | null>(null)
 
-  const handleSignIn = (e: React.FormEvent) => {
-    e.preventDefault()
-    const wallet = generateDeterministicKey(password, password, 'sr25519')
-    setWalletInfo({
-      address: wallet.address,
-      type: wallet.type
-    })
-    setPassword('')
-  }
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Wait until the WASM is ready
+      await cryptoWaitReady();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Implement search functionality here
-    console.log('Searching for:', searchTerm)
-  }
+      // Now that the WASM is ready, we can safely instantiate the wallet
+      const wallet = new Wallet(password);
+      setWalletInfo({
+        address: wallet.getAddress(),
+        type: wallet.getType()
+      });
+    } catch (error) {
+      console.error('Failed to create wallet:', error);
+    }
+  };
 
   return (
     <header className="z-40 sticky top-0 flex flex-none w-full border-b border-gray-50/[0.06] backdrop-blur">
@@ -47,22 +48,9 @@ export const Header = () => {
               className="mr-[3px]" 
             />
           </Link>
-          
         </div>
 
         <div className="flex items-center gap-x-6">
-          {/* {navigation.map(({ name, href }) => (
-            <Link 
-              key={name} 
-              href={href}
-              className={`px-4 py-2 rounded-lg text-sm leading-6 text-gray-100 hover:bg-gray-800 transition-colors ${
-                currentPath === href ? "bg-gray-800 font-medium" : ""
-              }`}
-            >
-              {name}
-            </Link>
-          ))}
-           */}
           {walletInfo ? (
             <div className="flex items-center gap-x-4">
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700">
